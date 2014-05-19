@@ -1,0 +1,29 @@
+<html>
+  <head>
+  </head>
+  <body>
+  	<div align="center">
+    		
+  	{% if diary_owner %}
+      <p align="center">
+      <a href="{{ url }}">{{ url_linktext }}</a>
+    	  </p>
+		{{ diary.author }}
+    
+    	  {% if diary.author %}
+	      <b>
+	      	Date : {{ diary.date }}, Weather : {{ diary.weather }}
+	      </b>
+	      <blockquote>{{ diary.content|escape }}</blockquote>
+    	  {% endif %}
+	  <p>
+	    <form action="/writer/" method="post">
+	      {% csrf_token %}
+	      <input type="hidden" name="diary_owner" value="{{ diary_owner }}" />
+	      <div><input type="submit" value="Go to post diary"></div>
+	    </form>
+	  </p>
+    {% endif %}
+   </div>
+  </body>
+</html>
