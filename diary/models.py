@@ -7,5 +7,5 @@ class Diary(db.Model):
     content = db.StringProperty(multiline=True)
     
     @classmethod
-    def get_key_from_name(cls, diary_owner=None):
-        return db.Key.from_path('Diary', diary_owner or 'anonymous')
+    def get_key_from_name(cls, diary_owner):
+        return db.Key.from_path('Diary', diary_owner)

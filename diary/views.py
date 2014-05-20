@@ -10,19 +10,14 @@ from diary.models import Diary
 def login_page(request):
     if users.get_current_user():
         # has logged in
-        print 'login'
-        nickname = users.get_current_user().nickname()
-        diary_owner = nickname[0:nickname.find('@')]
-        return diary_page(request, diary_owner)
+        return diary_page(request, users.get_current_user().nickname())
     else:
         # has logged out
-        print 'logout'
         return HttpResponseRedirect(users.create_login_url('/'))
 
 
 def diary_page(request, diary_owner):
     if request.method == 'POST':
-        print 'owner ' + diary_owner
         diary_key = Diary.get_key_from_name(diary_owner)
         # get DB
         diary = Diary(parent=diary_key)
@@ -40,33 +35,30 @@ def diary_page(request, diary_owner):
         # put to DB
         diary.put()
         
-        print diary.author
-        print 'put!!'
-        
         return HttpResponseRedirect('/')
 
     # get key
     diary_key = Diary.get_key_from_name(diary_owner)
     # make query for select data ordered dsec
-    diary_query = Diary.all().ancestor(diary_key).order('date')
+    diary_query = Diary.all().ancestor(diary_key).order('-date')
     # get result set
-    diary = diary_query.fetch(10)
+    diaries = diary_query.fetch(2)
     
     # get user, if exist current user
     if users.get_current_user():
-        # create logout url_link
-        url_link = users.create_logout_url('/')
+        # create logout url
+        url = users.create_logout_url('/')
         url_linktext = 'Logout'
     else:
-        # create login url_link
-        url_link = users.create_login_url('/')
-        url_linktext = 'Login'
+        # create login url
+        return HttpResponseRedirect(users.create_login_url('/'))
         
     # set up values for use in template
     template_values = {
-        'diary': diary,
+        'diaries': diaries,
+        'diary_author': diary_owner[0:diary_owner.find('@')],
         'diary_owner': diary_owner,
-        'url_link': url_link,
+        'url': url,
         'url_linktext': url_linktext,
     }
     
@@ -77,19 +69,20 @@ def diary_writer(request):
     if request.method == 'POST':
         # get user, if exist current user
         if users.get_current_user():
-            # create logout url_link
-            url_link = users.create_logout_url('/')
+            # create logout url
+            url = users.create_login_url('/')
             url_linktext = 'Logout'
         else:
-            # create login url_link
-            url_link = users.create_login_url('/')
-            url_linktext = 'Login'
+            # create login url
+            return HttpResponseRedirect(users.create_login_url('/'))
             
         # set up values for use in template
+        diarwy_owner = request.POST.get('diary_owner');
         template_values = {
-            'diary_date': datetime.datetime.now().strftime('%Y%m%d'),
-            'diary_owner': request.POST.get('diary_owner'),
-            'url_link': url_link,
+            'diary_date': datetime.datetime.now().strftime('%Y. %m. %d.'),
+            'diary_author': diarwy_owner[0:diarwy_owner.find('@')],
+            'diary_owner': diarwy_owner,
+            'url': url,
             'url_linktext': url_linktext,
         }
         
